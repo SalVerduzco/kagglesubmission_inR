@@ -1,0 +1,3 @@
+d.train = read.csv("training.csv", stringsAsFactors=F)
+im.train = d.train$Image
+d.train$Image = NULL
