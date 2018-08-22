@@ -1,3 +1,19 @@
 d.train = read.csv("training.csv", stringsAsFactors=F)
 im.train = d.train$Image
 d.train$Image = NULL
+
+#for parallel computing, install foreach
+
+install.packages("foreach")
+library(foreach)
+
+#seperate string representation of images into int for pixel representation
+im.train = foreach(im = im.train, .combine=rbind) %do% {
+as.integer(unlist(strsplit(im," "))) }
+d.test = read.csv("test.csv", stringsAsFactors = F)
+im.test = foreach(im = d.test$Image, .combine = rbind) %do% {
+as.integer(unlist(strsplit(im," "))) }
+d.test$Image = NULL;
+
+#convert vector of integers to matrix
+im = matrix(data=rev(im.train[1,]), nrow = 96, ncol = 96)
