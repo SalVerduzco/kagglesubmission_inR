@@ -15,5 +15,45 @@ im.test = foreach(im = d.test$Image, .combine = rbind) %do% {
 as.integer(unlist(strsplit(im," "))) }
 d.test$Image = NULL;
 
-#convert vector of integers to matrix
-im = matrix(data=rev(im.train[1,]), nrow = 96, ncol = 96)
+#list of facial feature keypoints
+keypoint.names = gsub("_x", "", names(d.train)[grep("_x", names(d.train))])
+#size of area snapshot and scanning length
+patch_size=10
+search_size=2
+
+#for every facial feature find the average area
+average.areas=foreach(coord=keypoint.names) %do% {
+  coordinate_x = paste(coord, "x", sep="_")
+  coordinate_y = paste(coord, "y", sep="_")
+  area = foreach(i=1:nrow(d.train), .combine=rbind) %do% {
+    im = matrix(data=im.train[i,], nrow=96, ncol=96)
+    x=d.train[i,coordinate_x]
+    y=d.train[i,coordinate_y]
+    x1=(x-patch_size)
+    x2=(x+patch_size)
+    y1=(y-patch_size)
+    y2=(y+patch_size)
+  
+  if ( (!is.na(x)) && (!is.na(y)) && (x1>=1) && (x2<=96) && (y1>=1) && (y2<=96) )
+		{
+			as.vector(im[x1:x2, y1:y2])
+		}
+    
+  else
+  {
+  NULL
+  }
+  
+  }
+  matrix(data=colMeans(area),nrow=2*patch_size+1,ncol=2*patch_size+1)
+  }
+  
+  #find position that best correlates to the average patch of a facial feature
+  pos = foreach(coordinate_i = 1:length(coordinate.names), .combine=cbind) %do%
+  {
+  coordinate = coordinate.names[coordinate_i]
+  coordinate_x = paste(coordinate, "x", sep="_")
+  coordinate_y = paste(coordinate, "y", sep="_")
+  
+  
+  
